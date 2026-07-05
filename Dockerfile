@@ -2,11 +2,9 @@ FROM node:20-slim
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y git curl --no-install-recommends && rm -rf /var/lib/apt/lists/*
-
 COPY package*.json ./
 
-RUN npm ci --omit=dev
+RUN npm install --production
 
 COPY . .
 

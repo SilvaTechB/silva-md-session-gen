@@ -10,14 +10,14 @@ const fs = require('fs');
 const os = require('os');
 let router = express.Router();
 const pino = require("pino");
-
-let _baileys = null;
-function getBaileys() {
-    if (!_baileys) {
-        _baileys = require("@whiskeysockets/baileys");
-    }
-    return _baileys;
-}
+const {
+    default: giftedConnect,
+    useMultiFileAuthState,
+    Browsers,
+    delay,
+    DisconnectReason,
+    fetchLatestBaileysVersion
+} = require("@whiskeysockets/baileys");
 
 const getSessionDir = () => {
     const dir = path.join(os.tmpdir(), 'silva-sessions', 'qr');
@@ -212,14 +212,6 @@ const iv=setInterval(()=>{s--;t.textContent=s;
 </html>`;
 
 router.get('/', async (req, res) => {
-    let baileys;
-    try {
-        baileys = getBaileys();
-    } catch (e) {
-        return res.status(503).send('<h2>WhatsApp library not available. Please check server setup.</h2>');
-    }
-    const { default: giftedConnect, useMultiFileAuthState, Browsers, delay, DisconnectReason, fetchLatestBaileysVersion } = baileys;
-
     const id = giftedId();
     const sessionDir = getSessionDir();
     const sessionPath = path.join(sessionDir, id);
