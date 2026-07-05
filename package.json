@@ -17,7 +17,6 @@
     "@whiskeysockets/baileys": "npm:baileys@6.7.21",
     "body-parser": "*",
     "express": "*",
-    "gifted-btns": "*",
     "pino": "*",
     "pino-pretty": "^13.0.0",
     "qrcode": "*"
