@@ -23,5 +23,8 @@
   },
   "devDependencies": {
     "@replit/connectors-sdk": "^0.4.0"
+  },
+  "overrides": {
+    "libsignal": "6.0.0"
   }
 }

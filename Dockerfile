@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y git curl --no-install-recommends && rm 
 
 COPY package*.json ./
 
-RUN npm install --production
+RUN npm ci --omit=dev
 
 COPY . .
 
