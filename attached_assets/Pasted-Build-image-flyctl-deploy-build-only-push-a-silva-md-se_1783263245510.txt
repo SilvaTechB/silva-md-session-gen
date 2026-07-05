@@ -1,0 +1,237 @@
+Build image
+ 
+flyctl deploy --build-only --push -a silva-md-session-gen --image-label deployment-75641800099a86786da7ee85f025e939 --config fly.toml
+
+==> Verifying app config
+
+Validating fly.toml
+
+✓ Configuration is valid
+
+--> Verified app config
+
+==> Building image
+
+Waiting for depot builder...
+
+
+==> Building image with Depot
+
+--> build: (​)
+
+#1 [internal] load build definition from Dockerfile
+
+#1 transferring dockerfile: 402B 0.0s done
+
+#1 DONE 0.0s
+
+
+#2 [internal] load metadata for docker.io/library/node:20-slim
+
+#2 DONE 0.2s
+
+
+#3 [internal] load .dockerignore
+
+#3 transferring context: 108B done
+
+#3 DONE 0.0s
+
+
+#4 [1/6] FROM docker.io/library/node:20-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
+
+#4 resolve docker.io/library/node:20-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0 done
+
+#4 DONE 0.0s
+
+
+#5 [internal] load build context
+
+#5 transferring context: 138.31kB 0.0s done
+
+#5 DONE 0.0s
+
+
+#6 [2/6] WORKDIR /app
+
+#6 CACHED
+
+
+#7 [3/6] COPY package*.json ./
+
+#7 DONE 0.0s
+
+
+#8 [4/6] RUN npm install --production
+
+#8 0.450 npm warn config production Use `--omit=dev` instead.
+
+#8 3.583 npm error code ENOENT
+
+#8 3.583 npm error syscall spawn git
+
+#8 3.583 npm error path git
+
+#8 3.583 npm error errno -2
+
+#8 3.583 npm error enoent An unknown git error occurred
+
+#8 3.583 npm error enoent This is related to npm not being able to find a file.
+
+#8 3.583 npm error enoent
+
+#8 3.586 npm notice
+
+#8 3.586 npm notice New major version of npm available! 10.8.2 -> 11.18.0
+
+#8 3.586 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.18.0
+
+#8 3.586 npm notice To update run: npm install -g npm@11.18.0
+
+#8 3.586 npm notice
+
+#8 3.586 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-07-05T14_53_12_776Z-debug-0.log
+
+#8 ERROR: process "/bin/sh -c npm install --production" did not complete successfully: exit code: 254
+
+------
+
+> [4/6] RUN npm install --production:
+
+3.583 npm error errno -2
+
+3.583 npm error enoent An unknown git error occurred
+
+3.583 npm error enoent This is related to npm not being able to find a file.
+
+3.583 npm error enoent
+
+3.586 npm notice
+
+3.586 npm notice New major version of npm available! 10.8.2 -> 11.18.0
+
+3.586 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.18.0
+
+3.586 npm notice To update run: npm install -g npm@11.18.0
+
+3.586 npm notice
+
+3.586 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-07-05T14_53_12_776Z-debug-0.log
+
+------
+
+==> Building image
+
+Waiting for depot builder...
+
+
+==> Building image with Depot
+
+--> build: (​)
+
+#1 [internal] load build definition from Dockerfile
+
+#1 transferring dockerfile: 402B done
+
+#1 DONE 0.0s
+
+
+#2 [internal] load metadata for docker.io/library/node:20-slim
+
+#2 DONE 0.2s
+
+
+#3 [internal] load .dockerignore
+
+#3 transferring context: 108B done
+
+#3 DONE 0.0s
+
+
+#4 [1/6] FROM docker.io/library/node:20-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0
+
+#4 resolve docker.io/library/node:20-slim@sha256:2cf067cfed83d5ea958367df9f966191a942351a2df77d6f0193e162b5febfc0 done
+
+#4 DONE 0.0s
+
+
+#5 [internal] load build context
+
+#5 transferring context: 797B done
+
+#5 DONE 0.0s
+
+
+#6 [2/6] WORKDIR /app
+
+#6 CACHED
+
+
+#7 [3/6] COPY package*.json ./
+
+#7 CACHED
+
+
+#8 [4/6] RUN npm install --production
+
+#8 0.192 npm warn config production Use `--omit=dev` instead.
+
+#8 2.746 npm error code ENOENT
+
+#8 2.746 npm error syscall spawn git
+
+#8 2.746 npm error path git
+
+#8 2.746 npm error errno -2
+
+#8 2.746 npm error enoent An unknown git error occurred
+
+#8 2.747 npm error enoent This is related to npm not being able to find a file.
+
+#8 2.747 npm error enoent
+
+#8 2.750 npm notice
+
+#8 2.750 npm notice New major version of npm available! 10.8.2 -> 11.18.0
+
+#8 2.750 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.18.0
+
+#8 2.750 npm notice To update run: npm install -g npm@11.18.0
+
+#8 2.750 npm notice
+
+#8 2.750 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-07-05T14_53_17_091Z-debug-0.log
+
+#8 ERROR: process "/bin/sh -c npm install --production" did not complete successfully: exit code: 254
+
+------
+
+> [4/6] RUN npm install --production:
+
+2.746 npm error errno -2
+
+2.746 npm error enoent An unknown git error occurred
+
+2.747 npm error enoent This is related to npm not being able to find a file.
+
+2.747 npm error enoent
+
+2.750 npm notice
+
+2.750 npm notice New major version of npm available! 10.8.2 -> 11.18.0
+
+2.750 npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.18.0
+
+2.750 npm notice To update run: npm install -g npm@11.18.0
+
+2.750 npm notice
+
+2.750 npm error A complete log of this run can be found in: /root/.npm/_logs/2026-07-05T14_53_17_091Z-debug-0.log
+
+------
+
+Error: failed to fetch an image or build from source: error building: failed to solve: process "/bin/sh -c npm install --production" did not complete successfully: exit code: 254
+
+Dockerfile failed to build error
+
+unsuccessful command 'flyctl deploy --build-only --push -a silva-md-session-gen --image-label deployment-75641800099a86786da7ee85f025e939 --config fly.toml'
