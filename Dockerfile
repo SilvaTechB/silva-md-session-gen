@@ -1,9 +1,10 @@
 FROM node:20-slim
 WORKDIR /app
 
-# Install git (needed because a package.json dependency is fetched via git)
-RUN apt-get update && apt-get install -y --no-install-recommends git \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends git curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && git config --global url."https://github.com/".insteadOf "ssh://git@github.com/" \
+    && git config --global url."https://github.com/".insteadOf "git@github.com:"
 
 COPY package*.json ./
 RUN npm install --production
