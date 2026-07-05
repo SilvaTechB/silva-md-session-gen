@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for silva-md-session-gen on 2026-07-04T07:20:14Z
+# fly.toml app configuration file generated for silva-md-session-gen-iizakg on 2026-07-05T16:26:49Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'silva-md-session-gen'
+app = 'silva-md-session-gen-iizakg'
 primary_region = 'ams'
 
 [build]
