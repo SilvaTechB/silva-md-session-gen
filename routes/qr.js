@@ -162,7 +162,11 @@ body{
   background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.15);
   font-size:.75rem;color:#6ee7b7;display:flex;align-items:flex-start;gap:7px;line-height:1.5;
 }
-@media(max-width:460px){.qr-wrap{width:220px;height:220px;}}
+@media(max-width:460px){.qr-wrap{width:min(220px,72vw);height:min(220px,72vw);}}
+:focus-visible{outline:2px solid var(--accent);outline-offset:4px;}
+::selection{background:rgba(167,139,250,.28);color:#fff;}
+.card{background:linear-gradient(145deg,rgba(255,255,255,.04),rgba(255,255,255,.015));backdrop-filter:blur(18px);}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 </style>
 </head>
 <body>
@@ -197,7 +201,7 @@ body{
         <div class="step"><div class="step-n">02</div>Tap <strong style="color:var(--text)">⋮ Menu → Linked Devices → Link a device</strong></div>
         <div class="step"><div class="step-n">03</div>Point camera at QR — session ID sent to your DM</div>
       </div>
-      <div class="security"><i class="fas fa-lock" style="margin-top:1px;flex-shrink:0"></i> Zero credentials stored. QR expires after one use. Session sent directly to your WhatsApp.</div>
+      <div class="security"><i class="fas fa-lock" style="margin-top:1px;flex-shrink:0"></i> Treat your session ID like a password. It is sent to your WhatsApp—never share it publicly or with an untrusted service.</div>
     </div>
   </div>
 </div>

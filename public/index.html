@@ -507,6 +507,42 @@ footer{
 .ft-copy{font-size:.7rem;color:var(--t3);}
 
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+
+/* UI polish */
+:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:6px;}
+::selection{background:rgba(0,230,118,.28);color:#fff;}
+.hero{position:relative;isolation:isolate;}
+.hero::before{content:"";position:absolute;z-index:-1;width:min(82vw,780px);height:min(82vw,780px);border-radius:50%;background:radial-gradient(circle,rgba(0,230,118,.085),rgba(0,188,212,.035) 38%,transparent 70%);filter:blur(12px);pointer-events:none;}
+.pill{backdrop-filter:blur(12px);}
+.hero-h{max-width:950px;text-wrap:balance;}
+.hero-p{text-wrap:pretty;}
+.btn-g,.btn-o,.nav-btn,.mcard,.feat,.plat{will-change:transform;}
+.mcard{background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));}
+.feat,.plat{transition:transform .22s ease,border-color .22s ease,background .22s ease;}
+.feat:hover,.plat:hover{transform:translateY(-3px);border-color:rgba(0,230,118,.2);}
+.announce{box-shadow:0 8px 30px rgba(0,0,0,.18);}
+@media(max-width:720px){
+  .announce{height:auto;min-height:40px;padding:7px 38px 7px 12px;}
+  .announce-text{font-size:.68rem;gap:6px;flex-wrap:wrap;justify-content:center;}
+  .announce-link{font-size:.67rem;}
+  .hero{min-height:auto;padding:150px 20px 72px;}
+  .hero-btns{width:100%;max-width:420px;margin-bottom:42px;}
+  .hero-btns a{flex:1;justify-content:center;padding-left:12px;padding-right:12px;}
+  .metrics{gap:20px 26px;max-width:390px;}
+  .metric-v{font-size:1.55rem;}
+  .metric-sep{height:28px;}
+  .sec{padding:64px 20px;}
+}
+@media(max-width:420px){
+  .announce-text span{max-width:190px;line-height:1.25;}
+  .hero{padding-top:138px;}
+  .hero-h{font-size:clamp(2.35rem,12vw,3.2rem);}
+  .metrics{gap:18px 22px;}
+  .metric-sep{display:none;}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}
+}
 </style>
 </head>
 <body>
