@@ -17,7 +17,7 @@ primary_region = 'ams'
 
 [checks]
   [checks.health]
-    port = 5000
+    port = 8080
     type = 'http'
     interval = '15s'
     timeout = '5s'

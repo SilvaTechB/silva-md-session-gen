@@ -4,7 +4,7 @@ A WhatsApp Session ID Generator web application that allows users to authenticat
 
 ## Project Structure
 
-- `index.js` - Main Express server entry point, runs on port 5000
+- `index.js` - Main Express server entry point, runs on port 8080
 - `routes/` - Route handlers for QR and pairing code flows
   - `qr.js` - QR code authentication route
   - `pair.js` - Pairing code (phone number) authentication route
@@ -27,7 +27,7 @@ A WhatsApp Session ID Generator web application that allows users to authenticat
 node index.js
 ```
 
-Server starts on port 5000 (0.0.0.0).
+Server starts on port 8080 (0.0.0.0).
 
 ## Deployment
 

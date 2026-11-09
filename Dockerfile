@@ -13,11 +13,11 @@ COPY . .
 
 RUN mkdir -p /tmp/silva-sessions/qr /tmp/silva-sessions/pair
 
-EXPOSE 5000
-ENV PORT=5000
+EXPOSE 8080
+ENV PORT=8080
 ENV NODE_ENV=production
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD curl -f http://localhost:5000/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
 CMD ["node", "index.js"]

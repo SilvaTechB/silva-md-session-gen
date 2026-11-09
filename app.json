@@ -15,8 +15,8 @@
       "required": false
     },
     "PORT": {
-      "description": "Port for the web app (5000 recommended)",
-      "value": "5000",
+      "description": "Port for the web app (8080 recommended)",
+      "value": "8080",
       "required": false
     }
   },

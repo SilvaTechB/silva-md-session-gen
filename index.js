@@ -3,7 +3,7 @@ const path = require('path');
 const app = express();
 __path = process.cwd()
 const bodyParser = require("body-parser");
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8080;
 const { 
   qrRoute,
   pairRoute
