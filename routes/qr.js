@@ -30,6 +30,9 @@ const getQRTemplate = (qrImage) => `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#080c10">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-mark.png">
+<link rel="apple-touch-icon" href="/favicon-mark.png">
 <title>SILVA NEXUS — QR Auth</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
