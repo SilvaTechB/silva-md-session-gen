@@ -10,6 +10,8 @@ const fs = require('fs');
 const os = require('os');
 let router = express.Router();
 const pino = require("pino");
+const crypto = require('crypto');
+const { createHandoff, publishSession, readHandoff, removeHandoff } = require('../gift/session-handoff');
 const {
     default: giftedConnect,
     useMultiFileAuthState,
@@ -25,7 +27,7 @@ const getSessionDir = () => {
     return dir;
 };
 
-const getQRTemplate = (qrImage) => `<!DOCTYPE html>
+const getQRTemplate = (qrImage, handoffToken) => `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -48,7 +50,7 @@ body{
   font-family:'Space Grotesk',sans-serif;
   background:var(--bg);color:var(--text);
   min-height:100vh;display:flex;align-items:center;justify-content:center;
-  padding:20px;overflow:hidden;
+  padding:20px;overflow-x:hidden;overflow-y:auto;
 }
 .glow-orb{
   position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;
@@ -165,6 +167,12 @@ body{
   background:rgba(52,211,153,0.04);border:1px solid rgba(52,211,153,0.15);
   font-size:.75rem;color:#6ee7b7;display:flex;align-items:flex-start;gap:7px;line-height:1.5;
 }
+.web-session{display:none;margin-top:14px;padding:14px;border:1px solid rgba(52,211,153,.27);border-radius:12px;background:rgba(52,211,153,.07);}
+.web-session.show{display:block;}
+.web-session-title{font-size:.84rem;font-weight:700;color:#6ee7b7;margin-bottom:6px;}
+.web-session-copy{font-size:.73rem;color:var(--text2);line-height:1.5;margin-bottom:10px;}
+.web-session-value{width:100%;min-height:82px;resize:vertical;padding:10px;border-radius:8px;border:1px solid var(--border);background:rgba(0,0,0,.3);color:var(--text);font:500 .7rem/1.5 'JetBrains Mono',monospace;overflow-wrap:anywhere;}
+.web-session-button{width:100%;margin-top:9px;padding:10px;border-radius:8px;border:1px solid rgba(52,211,153,.3);background:rgba(52,211,153,.12);color:#6ee7b7;font-weight:700;cursor:pointer;}
 @media(max-width:460px){.qr-wrap{width:min(220px,72vw);height:min(220px,72vw);}}
 :focus-visible{outline:2px solid var(--accent);outline-offset:4px;}
 ::selection{background:rgba(167,139,250,.28);color:#fff;}
@@ -205,20 +213,62 @@ body{
         <div class="step"><div class="step-n">03</div>Point camera at QR — session ID sent to your DM</div>
       </div>
       <div class="security"><i class="fas fa-lock" style="margin-top:1px;flex-shrink:0"></i> Treat your session ID like a password. It is sent to your WhatsApp—never share it publicly or with an untrusted service.</div>
+      <div class="web-session" id="webSession" aria-live="polite">
+        <div class="web-session-title"><i class="fas fa-circle-check"></i> Session ready</div>
+        <p class="web-session-copy">Same session ID sent to your WhatsApp. Copy it now and keep it private; this browser view expires in 10 minutes.</p>
+        <textarea class="web-session-value" id="webSessionValue" readonly aria-label="Your WhatsApp session ID" spellcheck="false"></textarea>
+        <button class="web-session-button" id="webSessionCopy" onclick="copyWebSession()"><i class="fas fa-copy"></i> Copy session ID</button>
+      </div>
     </div>
   </div>
 </div>
+<script src="/ambient.js" defer></script>
 <script>
+const handoffToken='${handoffToken}';
 let s=60;const t=document.getElementById('timer');
 const iv=setInterval(()=>{s--;t.textContent=s;
   if(s<=10)t.className='urgent';else if(s<=20)t.className='warn';
   if(s<=0){clearInterval(iv);t.textContent='EXP';}
 },1000);
+
+async function watchSession(){
+  for(let i=0;i<120;i++){
+    await new Promise(resolve=>setTimeout(resolve,2000));
+    try{
+      const response=await fetch('/qr/session/'+encodeURIComponent(handoffToken),{cache:'no-store',credentials:'same-origin'});
+      const data=await response.json();
+      if(data.status==='ready'&&typeof data.sessionId==='string'){
+        document.getElementById('webSessionValue').value=data.sessionId;
+        document.getElementById('webSession').classList.add('show');
+        return;
+      }
+      if(data.status==='expired'||data.status==='not_found')return;
+    }catch(_){/* Keep polling through transient network errors. */}
+  }
+}
+
+async function copyWebSession(){
+  const value=document.getElementById('webSessionValue').value;
+  if(!value)return;
+  const button=document.getElementById('webSessionCopy');
+  try{await navigator.clipboard.writeText(value);button.innerHTML='<i class="fas fa-check"></i> Copied';setTimeout(()=>button.innerHTML='<i class="fas fa-copy"></i> Copy session ID',2200);}
+  catch(_){const field=document.getElementById('webSessionValue');field.focus();field.select();button.textContent='Select and copy';}
+}
+watchSession();
 </script>
 </body>
 </html>`;
 
+router.get('/session/:token', (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    res.set('Pragma', 'no-cache');
+    const result = readHandoff(req.params.token);
+    return res.status(result.status === 'not_found' ? 404 : 200).json(result);
+});
+
 router.get('/', async (req, res) => {
+    const handoffToken = createHandoff(crypto.randomUUID());
+    let handoffPublished = false;
     const id = giftedId();
     const sessionDir = getSessionDir();
     const sessionPath = path.join(sessionDir, id);
@@ -240,6 +290,7 @@ router.get('/', async (req, res) => {
         clearTimeout(timeout);
         if (!sessionCleanedUp) {
             sessionCleanedUp = true;
+            if (!handoffPublished) removeHandoff(handoffToken);
             try { await removeFile(sessionPath); } catch (_) {}
         }
     }
@@ -269,7 +320,10 @@ router.get('/', async (req, res) => {
                     try {
                         const qrImg = await QRCode.toDataURL(qr, { margin: 1, width: 240 });
                         if (!res.headersSent) {
-                            res.send(getQRTemplate(qrImg));
+                            res.set('Cache-Control', 'no-store, private');
+                res.set('Pragma', 'no-cache');
+                res.set('Referrer-Policy', 'no-referrer');
+                res.send(getQRTemplate(qrImg, handoffToken));
                             responseSent = true;
                         }
                     } catch (e) {
@@ -291,9 +345,12 @@ router.get('/', async (req, res) => {
                     }
                     try {
                         const compressed = zlib.gzipSync(Buffer.from(credsJson)).toString('base64');
+                        const sessionId = `Silva~${compressed}`;
+                        publishSession(handoffToken, sessionId);
+                        handoffPublished = true;
                         const uid = sock.user?.id;
                         if (uid) {
-                            await sock.sendMessage(uid, { text: `Silva~${compressed}` });
+                            await sock.sendMessage(uid, { text: sessionId });
                             await delay(1500);
                             await sock.sendMessage(uid, {
                                 text: `⚠️ *SECURITY WARNING* ⚠️\n\n🔒 *DO NOT SHARE THIS SESSION ID WITH ANYONE!*\n\nOnly share it with your trusted bot deployer.\n\n───────────────────────\n\n✨ *SILVA TECH NEXUS*\n\n📢 Join our channel:\nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n🤖 Bot Repository:\nhttps://github.com/SilvaTechB/silva-md-bot`

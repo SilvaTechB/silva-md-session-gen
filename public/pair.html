@@ -215,6 +215,12 @@ body{background-image:radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.07),tran
 .code-val{font-size:clamp(1.45rem,7vw,2rem);}
 .security-note{margin-top:16px;padding:12px 13px;border:1px solid rgba(255,193,7,.2);border-radius:10px;background:rgba(255,193,7,.055);color:#d8c68b;font-size:.75rem;line-height:1.55;display:flex;gap:9px;align-items:flex-start;}
 .security-note i{color:#ffc107;margin-top:2px;flex:none;}
+.session-result{display:none;margin-top:18px;padding:16px;border:1px solid rgba(0,230,118,.25);border-radius:13px;background:linear-gradient(145deg,rgba(0,230,118,.08),rgba(0,188,212,.035));}
+.session-result.show{display:block;animation:fadeIn .35s ease both;}
+.session-result-title{font-size:.85rem;font-weight:800;color:var(--primary);display:flex;align-items:center;gap:8px;}
+.session-result-copy{font-size:.73rem;color:var(--t2);line-height:1.5;margin:6px 0 12px;}
+.session-value{display:block;width:100%;min-height:84px;padding:10px 11px;resize:vertical;border-radius:9px;border:1px solid var(--border);background:rgba(0,0,0,.28);color:var(--t1);font:500 .72rem/1.55 'JetBrains Mono',monospace;overflow-wrap:anywhere;}
+.session-copy{margin-top:10px;width:100%;justify-content:center;min-height:42px;}
 @media(max-width:520px){body{padding:16px;align-items:flex-start;padding-top:max(16px,env(safe-area-inset-top));}.wrap{margin:auto 0;}.card{border-radius:18px;}.card-head{padding:22px 20px 18px;}.card-body{padding:21px 20px;}.topbar{gap:8px;}.back-btn,.alt-btn{padding:8px 10px;font-size:.74rem;}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;}}
 </style>
@@ -309,11 +315,19 @@ body{background-image:radial-gradient(ellipse at 50% 0%,rgba(0,230,118,.07),tran
         <div class="w-title">Waiting for WhatsApp...</div>
         <div class="w-sub">Enter the code on your phone.<br>Your session ID will arrive in your WhatsApp DM automatically.</div>
       </div>
+      <div class="session-result" id="sessionResult" aria-live="polite">
+        <div class="session-result-title"><i class="fas fa-circle-check"></i> Session ready</div>
+        <p class="session-result-copy">This is the same session ID sent to your WhatsApp. Copy it now and keep it private; it is available in this browser for up to 10 minutes.</p>
+        <textarea class="session-value" id="sessionValue" readonly aria-label="Your WhatsApp session ID" spellcheck="false"></textarea>
+        <button class="copy-btn session-copy" id="copySessionBtn" onclick="copySessionId()"><i class="fas fa-copy"></i> Copy session ID</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="/ambient.js" defer></script>
 <script>
+let activeHandoffToken=null;
 async function getCode(){
   const phone=document.getElementById('phone').value.trim().replace(/[^0-9]/g,'');
   const btn=document.getElementById('submitBtn');
@@ -326,13 +340,15 @@ async function getCode(){
   errBox.classList.remove('show');
   setStep(1);
   try{
-    const res=await fetch(`/code?number=${phone}`);
+    activeHandoffToken=crypto.randomUUID();
+    const res=await fetch(`/code?number=${encodeURIComponent(phone)}&handoff=${encodeURIComponent(activeHandoffToken)}`,{cache:'no-store'});
     const data=await res.json();
     loading.classList.remove('show');
     btn.disabled=false;
     btn.innerHTML='<i class="fas fa-bolt"></i> Generate Pairing Code';
     if(data.code&&!data.code.toLowerCase().includes('service')&&!data.code.toLowerCase().includes('error')){
       showCode(data.code);
+      pollForSession(activeHandoffToken);
     }else{
       showError(data.code||'Failed to generate code. Please try again.');
     }
@@ -351,6 +367,38 @@ function showCode(code){
   setStep(2);
   setTimeout(()=>setStep(3),8000);
   setTimeout(()=>setStep(4),30000);
+}
+
+async function pollForSession(token){
+  for(let attempt=0;attempt<120&&token===activeHandoffToken;attempt++){
+    await new Promise(resolve=>setTimeout(resolve,2000));
+    try{
+      const res=await fetch(`/code/session/${encodeURIComponent(token)}`,{cache:'no-store',credentials:'same-origin'});
+      const data=await res.json();
+      if(data.status==='ready'&&typeof data.sessionId==='string'){
+        document.getElementById('sessionValue').value=data.sessionId;
+        document.getElementById('sessionResult').classList.add('show');
+        document.getElementById('waitingBox').classList.remove('show');
+        setStep(4);
+        return;
+      }
+      if(data.status==='expired'||data.status==='not_found')return;
+    }catch(_){/* Retry transient network failures while this page remains open. */}
+  }
+}
+
+async function copySessionId(){
+  const value=document.getElementById('sessionValue').value;
+  if(!value)return;
+  const button=document.getElementById('copySessionBtn');
+  try{
+    await navigator.clipboard.writeText(value);
+    button.innerHTML='<i class="fas fa-check"></i> Copied';
+    setTimeout(()=>button.innerHTML='<i class="fas fa-copy"></i> Copy session ID',2200);
+  }catch(_){
+    const field=document.getElementById('sessionValue');field.focus();field.select();
+    button.innerHTML='<i class="fas fa-triangle-exclamation"></i> Select and copy';
+  }
 }
 
 function setStep(n){

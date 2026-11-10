@@ -10,6 +10,7 @@ const os = require('os');
 const path = require('path');
 let router = express.Router();
 const pino = require("pino");
+const { createHandoff, publishSession, readHandoff, removeHandoff, isValidToken } = require('../gift/session-handoff');
 const {
     default: giftedConnect,
     useMultiFileAuthState,
@@ -26,11 +27,27 @@ const getSessionDir = () => {
     return dir;
 };
 
+router.get('/session/:token', (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    res.set('Pragma', 'no-cache');
+    if (!isValidToken(req.params.token)) return res.status(400).json({ status: 'not_found' });
+    const result = readHandoff(req.params.token);
+    return res.status(result.status === 'not_found' ? 404 : 200).json(result);
+});
+
 router.get('/', async (req, res) => {
+    res.set('Cache-Control', 'no-store, private');
+    res.set('Pragma', 'no-cache');
+    const handoffValue = req.query.handoff;
+    if (handoffValue !== undefined && !isValidToken(handoffValue)) {
+        return res.status(400).json({ code: 'Invalid session handoff token.' });
+    }
+    const handoffToken = handoffValue ? createHandoff(handoffValue) : null;
     const id = giftedId();
     const sessionDir = getSessionDir();
     const sessionPath = path.join(sessionDir, id);
     let num = req.query.number;
+    let handoffPublished = false;
     let responseSent = false;
     let sessionCleanedUp = false;
     let sessionAlreadySent = false;
@@ -53,6 +70,7 @@ router.get('/', async (req, res) => {
         clearTimeout(timeout);
         if (!sessionCleanedUp) {
             sessionCleanedUp = true;
+            if (!handoffPublished) removeHandoff(handoffToken);
             try { await removeFile(sessionPath); } catch (_) {}
         }
     }
@@ -112,9 +130,11 @@ router.get('/', async (req, res) => {
 
                     try {
                         const compressed = zlib.gzipSync(Buffer.from(credsJson)).toString('base64');
+                        const sessionId = `Silva~${compressed}`;
+                        if (handoffToken) { publishSession(handoffToken, sessionId); handoffPublished = true; }
                         const uid = sock.user?.id;
                         if (uid) {
-                            await sock.sendMessage(uid, { text: `Silva~${compressed}` });
+                            await sock.sendMessage(uid, { text: sessionId });
                             await delay(1500);
                             await sock.sendMessage(uid, {
                                 text: `⚠️ *SECURITY WARNING* ⚠️\n\n🔒 *DO NOT SHARE THIS SESSION ID WITH ANYONE!*\n\nOnly share it with your trusted bot deployer.\n\n───────────────────────\n\n✨ *SILVA TECH NEXUS*\n\n📢 Join our channel:\nhttps://whatsapp.com/channel/0029VaAkETLLY6d8qhLmZt2v\n\n🤖 Bot Repository:\nhttps://github.com/SilvaTechB/silva-md-bot`
